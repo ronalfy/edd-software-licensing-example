@@ -70,8 +70,8 @@ class EDD_SL_Example {
 	 * Fired when the plugins for WordPress have finished loading.
 	 */
 	public function plugins_loaded() {
-		$this->admin_output = new \EDD_SL_Example\Includes\Admin\Output();
-		$this->admin_output->run();
+		$this->admin = new \EDD_SL_Example\Includes\Admin\Admin();
+		$this->admin->run();
 
 		$this->admin_enqueue = new \EDD_SL_Example\Includes\Admin\Enqueue();
 		$this->admin_enqueue->run();

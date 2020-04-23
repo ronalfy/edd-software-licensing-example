@@ -19,9 +19,9 @@ class Ajax {
 	public function run() {
 
 		// License Saving/Checking.
-		add_action( 'wp_ajax_mrt_license_save', array( $this, 'ajax_license_save' ) );
-		add_action( 'wp_ajax_mrt_license_check', array( $this, 'ajax_license_check' ) );
-		add_action( 'wp_ajax_mrt_license_deactivate', array( $this, 'ajax_license_deactivate' ) );
+		add_action( 'wp_ajax_edd_sl_license_save', array( $this, 'ajax_license_save' ) );
+		add_action( 'wp_ajax_edd_sl_license_check', array( $this, 'ajax_license_check' ) );
+		add_action( 'wp_ajax_edd_sl_license_deactivate', array( $this, 'ajax_license_deactivate' ) );
 
 	}
 
@@ -30,16 +30,16 @@ class Ajax {
 	 */
 	public function ajax_license_save() {
 		$nonce = filter_input( INPUT_POST, 'nonce', FILTER_DEFAULT );
-		if ( ! wp_verify_nonce( $nonce, 'save_mrt_options' ) || ! current_user_can( 'manage_options' ) ) {
+		if ( ! wp_verify_nonce( $nonce, 'save_edd_sl_options' ) || ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error(
-				new \WP_Error( 'mrt_license_save', esc_html__( 'Security check failed.', 'edd-software-licensing-example' ) )
+				new \WP_Error( 'edd_sl_license_save', esc_html__( 'Security check failed.', 'edd-software-licensing-example' ) )
 			);
 		}
 
 		$license = trim( filter_input( INPUT_POST, 'license', FILTER_DEFAULT ) );
 
 		if ( empty( $license ) ) {
-			wp_send_json_error( new \WP_Error( 'mrt_invalid_license', __( 'The license field cannot be empty.', 'edd-software-licensing-example' ) ) );
+			wp_send_json_error( new \WP_Error( 'edd_sl_invalid_license', __( 'The license field cannot be empty.', 'edd-software-licensing-example' ) ) );
 		}
 
 		// Check for valid license.
@@ -47,7 +47,7 @@ class Ajax {
 		$api_params = array(
 			'edd_action' => 'activate_license',
 			'license'    => $license,
-			'item_name'  => rawurlencode( 'Teams' ),
+			'item_name'  => rawurlencode( 'EDD Software Licensing Example' ),
 			'url'        => home_url(),
 		);
 		// Call the custom API.
@@ -68,7 +68,7 @@ class Ajax {
 			if ( is_wp_error( $response ) ) {
 				wp_send_json_error( $response );
 			} else {
-				wp_send_json_error( new \WP_Error( 'mrt_invalid_code', __( 'We could not communicate with the update server. Please try again later.', 'edd-software-licensing-example' ) ) );
+				wp_send_json_error( new \WP_Error( 'edd_sl_invalid_code', __( 'We could not communicate with the update server. Please try again later.', 'edd-software-licensing-example' ) ) );
 			}
 		} else {
 
@@ -100,7 +100,7 @@ class Ajax {
 
 					case 'item_name_mismatch':
 						/* Translators: %s is the plugin name */
-						$license_message = sprintf( __( 'This appears to be an invalid license key for %s.', 'edd-software-licensing-example' ), 'WP Teams Pro' );
+						$license_message = sprintf( __( 'This appears to be an invalid license key for %s.', 'edd-software-licensing-example' ), 'EDD Software Licensing Example' );
 						break;
 
 					case 'no_activations_left':
@@ -115,12 +115,19 @@ class Ajax {
 				$options['license_status'] = $license_data->license;
 				$options['license']        = sanitize_text_field( $license );
 				Options::update_options( $options );
-				wp_send_json_success( array( 'message' => __( 'Your license is now active.', 'edd-software-licensing-example' ) ) );
+				ob_start();
+				require_once EDD_SL_EXAMPLE_DIR . 'includes/license-buttons.php';
+				wp_send_json_success(
+					array(
+						'message' => __( 'Your license is now active.', 'edd-software-licensing-example' ),
+						'html'    => ob_get_clean(),
+					)
+				);
 			} else {
-				wp_send_json_error( new \WP_Error( 'mrt_license_fail', $license_message ) );
+				wp_send_json_error( new \WP_Error( 'edd_sl_license_fail', $license_message ) );
 			}
 		}
-		wp_send_json_error( new \WP_Error( 'mrt_license_failure', __( 'An unexpected error has occurred. Please contact support.', 'edd-software-licensing-example' ) ) );
+		wp_send_json_error( new \WP_Error( 'edd_sl_license_failure', __( 'An unexpected error has occurred. Please contact support.', 'edd-software-licensing-example' ) ) );
 	}
 
 	/**
@@ -128,16 +135,16 @@ class Ajax {
 	 */
 	public function ajax_license_deactivate() {
 		$nonce = filter_input( INPUT_POST, 'nonce', FILTER_DEFAULT );
-		if ( ! wp_verify_nonce( $nonce, 'save_mrt_options' ) || ! current_user_can( 'manage_options' ) ) {
+		if ( ! wp_verify_nonce( $nonce, 'save_edd_sl_options' ) || ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error(
-				new \WP_Error( 'mrt_license_save', esc_html__( 'Security check failed.', 'edd-software-licensing-example' ) )
+				new \WP_Error( 'edd_sl_license_save', esc_html__( 'Security check failed.', 'edd-software-licensing-example' ) )
 			);
 		}
 
 		$license = trim( filter_input( INPUT_POST, 'license', FILTER_DEFAULT ) );
 
 		if ( empty( $license ) ) {
-			wp_send_json_error( new \WP_Error( 'mrt_invalid_license', __( 'The license field cannot be empty.', 'edd-software-licensing-example' ) ) );
+			wp_send_json_error( new \WP_Error( 'edd_sl_invalid_license', __( 'The license field cannot be empty.', 'edd-software-licensing-example' ) ) );
 		}
 
 		// Check for valid license.
@@ -145,7 +152,7 @@ class Ajax {
 		$api_params = array(
 			'edd_action' => 'deactivate_license',
 			'license'    => $license,
-			'item_name'  => rawurlencode( 'Teams' ),
+			'item_name'  => rawurlencode( 'EDD Software Licensing Example' ),
 			'url'        => home_url(),
 		);
 		// Call the custom API.
@@ -166,13 +173,20 @@ class Ajax {
 			if ( is_wp_error( $response ) ) {
 				wp_send_json_error( $response );
 			} else {
-				wp_send_json_error( new \WP_Error( 'mrt_invalid_code', __( 'We could not communicate with the update server. Please try again later.', 'edd-software-licensing-example' ) ) );
+				wp_send_json_error( new \WP_Error( 'edd_sl_invalid_code', __( 'We could not communicate with the update server. Please try again later.', 'edd-software-licensing-example' ) ) );
 			}
 		} else {
 			$options['license_status'] = '';
 			$options['license']        = '';
 			Options::update_options( $options );
-			wp_send_json_success( array( 'message' => __( 'Your license is now deactivated.', 'edd-software-licensing-example' ) ) );
+			ob_start();
+			require_once EDD_SL_EXAMPLE_DIR . 'includes/license-buttons.php';
+			wp_send_json_success(
+				array(
+					'message' => __( 'Your license is now deactivated.', 'edd-software-licensing-example' ),
+					'html'    => ob_get_clean(),
+				)
+			);
 		}
 	}
 
@@ -181,16 +195,16 @@ class Ajax {
 	 */
 	public function ajax_license_check() {
 		$nonce = filter_input( INPUT_POST, 'nonce', FILTER_DEFAULT );
-		if ( ! wp_verify_nonce( $nonce, 'save_mrt_options' ) || ! current_user_can( 'manage_options' ) ) {
+		if ( ! wp_verify_nonce( $nonce, 'save_edd_sl_options' ) || ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error(
-				new \WP_Error( 'mrt_license_save', esc_html__( 'Security check failed.', 'edd-software-licensing-example' ) )
+				new \WP_Error( 'edd_sl_license_save', esc_html__( 'Security check failed.', 'edd-software-licensing-example' ) )
 			);
 		}
 
 		$license = trim( filter_input( INPUT_POST, 'license', FILTER_DEFAULT ) );
 
 		if ( empty( $license ) ) {
-			wp_send_json_error( new \WP_Error( 'mrt_invalid_license', __( 'The license field cannot be empty.', 'edd-software-licensing-example' ) ) );
+			wp_send_json_error( new \WP_Error( 'edd_sl_invalid_license', __( 'The license field cannot be empty.', 'edd-software-licensing-example' ) ) );
 		}
 
 		// Check for valid license.
@@ -198,7 +212,7 @@ class Ajax {
 		$api_params = array(
 			'edd_action' => 'check_license',
 			'license'    => $license,
-			'item_name'  => rawurlencode( 'Teams' ),
+			'item_name'  => rawurlencode( 'EDD Software Licensing Example' ),
 			'url'        => home_url(),
 		);
 		// Call the custom API.
@@ -217,7 +231,7 @@ class Ajax {
 			if ( is_wp_error( $response ) ) {
 				wp_send_json_error( $response );
 			} else {
-				wp_send_json_error( new \WP_Error( 'mrt_invalid_code', __( 'We could not communicate with the update server. Please try again later.', 'edd-software-licensing-example' ) ) );
+				wp_send_json_error( new \WP_Error( 'edd_sl_invalid_code', __( 'We could not communicate with the update server. Please try again later.', 'edd-software-licensing-example' ) ) );
 			}
 		} else {
 			$response = json_decode( wp_remote_retrieve_body( $response ) );
@@ -244,7 +258,14 @@ class Ajax {
 				_n( 'site', 'sites', absint( $response->site_count ), 'edd-software-licensing-example' )
 			);
 			$message .= '</ul>';
-			wp_send_json_success( array( 'message' => $message ) );
+			ob_start();
+			require_once EDD_SL_EXAMPLE_DIR . 'includes/license-buttons.php';
+			wp_send_json_success(
+				array(
+					'message' => $message,
+					'html'    => ob_get_clean(),
+				)
+			);
 		}
 	}
 }
